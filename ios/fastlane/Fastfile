@@ -1,0 +1,124 @@
+# ios/fastlane/Fastfile
+default_platform(:ios)
+
+platform :ios do
+  desc "Build and upload to App Store Connect"
+  lane :release do
+    # Set up App Store Connect API key
+    app_store_connect_api_key(
+      key_id: ENV['APPSTORE_KEY_ID'],
+      issuer_id: ENV['APPSTORE_ISSUER_ID'],
+      key_filepath: "~/.appstoreconnect/private_keys/AuthKey_#{ENV['APPSTORE_KEY_ID']}.p8",
+      duration: 1200,
+      in_house: false
+    )
+
+    # Use match for certificate management (recommended) or sync_code_signing
+    begin
+      # Try to get existing certificates without creating new ones
+      sync_code_signing(
+        type: "appstore",
+        app_identifier: "com.yoloworks.invoice.dev",
+        team_id: ENV['DEVELOPER_TEAM_ID'],
+        readonly: true,  # Don't create new certificates
+        force_for_new_devices: false
+      )
+    rescue => ex
+      UI.important("sync_code_signing failed: #{ex.message}")
+      UI.important("Falling back to automatic signing...")
+    end
+
+    # Enable automatic code signing as fallback
+    enable_automatic_code_signing(
+      path: "Runner.xcodeproj",
+      team_id: ENV['DEVELOPER_TEAM_ID'],
+      targets: ["Runner"]
+    )
+
+    # Increment build number
+    increment_build_number(xcodeproj: "Runner.xcodeproj")
+
+    # Build the app with automatic signing
+    build_app(
+      workspace: "Runner.xcworkspace",
+      scheme: "dev",
+      configuration: "Release-dev",
+      export_method: "app-store",
+      export_options: {
+        method: "app-store",
+        signingStyle: "automatic",
+        teamID: ENV['DEVELOPER_TEAM_ID']
+      },
+      output_directory: "./build/ios/ipa",
+      output_name: "Yolo-dev.ipa"
+    )
+
+    # Upload to App Store Connect
+    upload_to_app_store(
+      skip_screenshots: true,
+      skip_metadata: true,
+      submit_for_review: false,
+      force: true,
+      reject_if_possible: true,
+      skip_waiting_for_build_processing: false,
+      precheck_include_in_app_purchases: false
+    )
+
+    slack(
+      message: "✅ Successfully uploaded new iOS build to App Store Connect!\n📱 App: Yolo-dev\n🔢 Build: #{get_build_number}",
+      slack_url: ENV['SLACK_WEBHOOK_URL']
+    ) if ENV['SLACK_WEBHOOK_URL']
+  end
+
+  desc "Build for TestFlight"
+  lane :beta do
+    app_store_connect_api_key(
+      key_id: ENV['APPSTORE_KEY_ID'],
+      issuer_id: ENV['APPSTORE_ISSUER_ID'],
+      key_filepath: "~/.appstoreconnect/private_keys/AuthKey_#{ENV['APPSTORE_KEY_ID']}.p8"
+    )
+
+    # Clear derived data and clean
+    clear_derived_data
+
+    enable_automatic_code_signing(
+      path: "Runner.xcodeproj",
+      team_id: ENV['DEVELOPER_TEAM_ID'],
+      targets: ["Runner"]
+    )
+
+    increment_build_number(xcodeproj: "Runner.xcodeproj")
+
+    build_app(
+      workspace: "Runner.xcworkspace",
+      scheme: "dev",
+      configuration: "Release-dev",
+      export_method: "app-store",
+      export_options: {
+        signingStyle: "automatic",
+        teamID: ENV['DEVELOPER_TEAM_ID'],
+        provisioningProfiles: {}  # Let Xcode handle this automatically
+      },
+      # Add these build settings to handle common issues
+      xcargs: "DEVELOPMENT_TEAM=#{ENV['DEVELOPER_TEAM_ID']} CODE_SIGN_STYLE=Automatic"
+    )
+
+    upload_to_testflight(
+      skip_waiting_for_build_processing: true,
+      changelog: "New beta build with latest features and bug fixes"
+    )
+  end
+
+  # Clean up any temp certificates/profiles
+  after_all do |lane|
+    clean_build_artifacts
+  end
+
+  error do |lane, exception|
+    slack(
+      message: "❌ iOS build failed!\n🔧 Lane: #{lane}\n💥 Error: #{exception.message}",
+      success: false,
+      slack_url: ENV['SLACK_WEBHOOK_URL']
+    ) if ENV['SLACK_WEBHOOK_URL']
+  end
+end

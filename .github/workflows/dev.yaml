@@ -1,0 +1,63 @@
+name: Build and Deploy Flutter iOS
+#TEST
+on:
+  push:
+    branches: [ preview ]
+
+jobs:
+  build_ios:
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Select Xcode version
+        run: sudo xcode-select -switch /Applications/Xcode_16.1.app/Contents/Developer
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.29.3'
+          cache: true
+
+      - name: Install Flutter dependencies
+        run: flutter pub get
+
+      - name: Setup Ruby for Fastlane
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.1'
+          bundler-cache: true
+
+      - name: Install Fastlane and CocoaPods
+        run: |
+          cd ios
+          gem install fastlane cocoapods
+          pod install --repo-update
+
+      - name: Clean build folder
+        run: |
+          cd ios
+          rm -rf build/
+          xcodebuild clean -workspace Runner.xcworkspace -scheme dev
+
+      - name: Create App Store Connect API Key file
+        run: |
+          mkdir -p ~/.appstoreconnect/private_keys/
+          echo "${{ secrets.APPSTORE_PRIVATE_KEY }}" | base64 --decode > ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APPSTORE_KEY_ID }}.p8
+
+      - name: Build and Deploy with Fastlane
+        env:
+          APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+          APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          DEVELOPER_TEAM_ID: ${{ secrets.DEVELOPER_TEAM_ID }}
+          FASTLANE_DISABLE_INTERACTIVE: true
+          FASTLANE_SKIP_UPDATE_CHECK: true
+        run: |
+          cd ios
+          fastlane beta
+
+      - name: Show gym log on failure
+        if: failure()
+        run: cat ~/Library/Logs/gym/Yolo\ Invoice\ Dev-dev.log || echo "Log not found"

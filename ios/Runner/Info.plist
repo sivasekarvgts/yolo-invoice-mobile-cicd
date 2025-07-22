@@ -10,6 +10,22 @@
 		<string>$(PRODUCT_NAME)</string>
 		<key>CFBundleExecutable</key>
 		<string>$(EXECUTABLE_NAME)</string>
+		<key>NSLocalNetworkUsageDescription</key>
+		<string>This app needs access to the local network for debugging and development purposes.</string>
+		<key>NSBonjourServices</key>
+		<array>
+			<string>_dartobservatory._tcp</string>
+		</array>
+		<key>NSLocalNetworkUsageDescription</key>
+        <string>This app uses the local network for debugging purposes.</string>
+        <key>NSPhotoLibraryUsageDescription</key>
+        <string>This app needs access to your photo library to allow you to select photos for invoices or other purposes.</string>
+        <key>NSCameraUsageDescription</key>
+        <string>This app needs access to the camera to take photos for invoices.</string>
+        <key>NSMicrophoneUsageDescription</key>
+        <string>This app uses the microphone for audio recording features.</string>
+        <key>NSLocationWhenInUseUsageDescription</key>
+        <string>This app needs access to your location to show customer locations or map features.</string>
 		<key>CFBundleIdentifier</key>
 		<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 		<key>CFBundleInfoDictionaryVersion</key>
@@ -23,7 +39,7 @@
 		<key>CFBundleSignature</key>
 		<string>????</string>
 		<key>CFBundleVersion</key>
-		<string>$(FLUTTER_BUILD_NUMBER)</string>
+		<string>9</string>
 		<key>LSRequiresIPhoneOS</key>
 		<true/>
 		<key>UIApplicationSupportsIndirectInputEvents</key>
