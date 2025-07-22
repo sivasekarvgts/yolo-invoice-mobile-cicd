@@ -1,63 +1,52 @@
-name: Build and Deploy Flutter iOS
-#TEST
+name: 🍏🚀 Deploy to appstore
+
 on:
-  push:
-    branches: [ preview ]
+  workflow_dispatch:
 
 jobs:
-  build_ios:
-    runs-on: macos-15
-
+  deployIos:
+    runs-on: macos-latest
+    env:
+      ASC_JSON_KEY: ${{ secrets.ASC_JSON_KEY }}
+      FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: ${{ secrets.APPSTORE_PRIVATE_KEY }}
+      FASTLANE_PASSWORD: ${{ secrets.FASTLANE_PASSWORD }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Select Xcode version
-        run: sudo xcode-select -switch /Applications/Xcode_16.1.app/Contents/Developer
-
-      - name: Setup Flutter
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v3
+      - name: ⚙️ Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.29.3'
+          flutter-version: "3.24.0"
+          channel: 'stable'
           cache: true
-
-      - name: Install Flutter dependencies
+        id: flutter
+      - name: Update version number from tag
+        run: |
+          # Extract the version components from refs tag (e.g., 1.2.3)
+          TAG_NAME=${{  github.ref_name }}
+          VERSION=${TAG_NAME#v} # Remove the 'v' prefix if it exists
+          echo "FLUTTER_BUILD_NAME=$VERSION" >> $GITHUB_ENV
+          MAJOR=$(echo $VERSION | cut -d. -f1)
+          MINOR=$(echo $VERSION | cut -d. -f2)
+          PATCH=$(echo $VERSION | cut -d. -f3)
+          NUMBER=$MAJOR$MINOR$PATCH
+          echo "FLUTTER_BUILD_NUMBER=$NUMBER" >> $GITHUB_ENV
+      - name: 📦 Get Packages
         run: flutter pub get
-
-      - name: Setup Ruby for Fastlane
+      - name: Setup Fastlane
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.1'
+          ruby-version: "3.3"
           bundler-cache: true
-
-      - name: Install Fastlane and CocoaPods
-        run: |
-          cd ios
-          gem install fastlane cocoapods
-          pod install --repo-update
-
-      - name: Clean build folder
-        run: |
-          cd ios
-          rm -rf build/
-          xcodebuild clean -workspace Runner.xcworkspace -scheme dev
-
-      - name: Create App Store Connect API Key file
-        run: |
-          mkdir -p ~/.appstoreconnect/private_keys/
-          echo "${{ secrets.APPSTORE_PRIVATE_KEY }}" | base64 --decode > ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APPSTORE_KEY_ID }}.p8
-
-      - name: Build and Deploy with Fastlane
+          working-directory: ios
+      - name: Setup app store connect
+        run: echo "$ASC_JSON_KEY" >> ./ios/fastlane/store.json
+      - name: Install pod
+        run: cd ios && pod install
+      - name: Build and Deploy to TestFlight
         env:
-          APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
-          APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
-          DEVELOPER_TEAM_ID: ${{ secrets.DEVELOPER_TEAM_ID }}
-          FASTLANE_DISABLE_INTERACTIVE: true
-          FASTLANE_SKIP_UPDATE_CHECK: true
+          MATCH_PASSWORD: ${{ secrets.FASTLANE_PASSWORD }}
+          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
         run: |
-          cd ios
-          fastlane beta
-
-      - name: Show gym log on failure
-        if: failure()
-        run: cat ~/Library/Logs/gym/Yolo\ Invoice\ Dev-dev.log || echo "Log not found"
+          cd ./ios
+          bundle exec fastlane ios beta
