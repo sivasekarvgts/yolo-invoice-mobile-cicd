@@ -1,0 +1,118 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    id "dev.flutter.flutter-gradle-plugin"
+    id "com.google.gms.google-services"
+}
+
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
+}
+
+def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
+if (flutterVersionCode == null) {
+    flutterVersionCode = '1'
+}
+
+def flutterVersionName = localProperties.getProperty('flutter.versionName')
+if (flutterVersionName == null) {
+    flutterVersionName = '1.0'
+}
+
+
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
+android {
+    namespace = "com.yoloworks.invoice"
+    compileSdk = 35
+//TODO upgrade
+    ndkVersion = "26.1.10909125"
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
+
+    defaultConfig {
+        applicationId = "com.yoloworks.invoice"
+        minSdkVersion 23
+        targetSdk 35
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
+    }
+
+    flavorDimensions "flavor-type"
+
+    productFlavors {
+        def app_name = "Yolo Invoice"
+        dev {
+            dimension "flavor-type"
+            applicationIdSuffix ".dev"
+            manifestPlaceholders = [appName: "$app_name Dev"]
+        }
+        devX {
+            dimension "flavor-type"
+            applicationIdSuffix ".devX"
+            manifestPlaceholders = [appName: "$app_name DEVX"]
+        }
+        uat {
+            dimension "flavor-type"
+            applicationIdSuffix ".uat"
+            manifestPlaceholders = [appName: "$app_name UAT"]
+        }
+        prod {
+            dimension "flavor-type"
+            manifestPlaceholders = [appName: "$app_name"]
+        }
+    }
+
+
+    // signingConfigs {
+    //     release {
+    //         keyAlias keystoreProperties['keyAlias']
+    //         keyPassword keystoreProperties['keyPassword']
+    //         storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
+    //         storePassword keystoreProperties['storePassword']
+    //     }
+    // }
+    signingConfigs {
+    release {
+        storeFile file("${rootProject.projectDir}/app/yolo-work.jks")
+        storePassword System.getenv("KEYSTORE_PASSWORD")
+        keyAlias System.getenv("KEYSTORE_ALIAS")
+        keyPassword System.getenv("KEYSTORE_PASSWORD")
+    }
+}
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+        }
+    }
+}
+
+flutter {
+    source = "../.."
+}
+
+
+
+dependencies {
+    implementation "androidx.core:core-ktx:1.12.0"
+}

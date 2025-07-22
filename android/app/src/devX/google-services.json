@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "373064065522",
+    "project_id": "invoice-dev-e2234",
+    "storage_bucket": "invoice-dev-e2234.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:373064065522:android:0eb5f644ad35673e7b0b6b",
+        "android_client_info": {
+          "package_name": "com.yoloworks.invoice.dev"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBNs9JtHuI4Ir3WppYpPD2sPmjEhwClXsI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:373064065522:android:ba929ac89509f7f77b0b6b",
+        "android_client_info": {
+          "package_name": "com.yoloworks.invoice.devX"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBNs9JtHuI4Ir3WppYpPD2sPmjEhwClXsI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:373064065522:android:38c3b07f81c8e56e7b0b6b",
+        "android_client_info": {
+          "package_name": "com.yoloworks.invoice.uat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBNs9JtHuI4Ir3WppYpPD2sPmjEhwClXsI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,90 @@
+name: Yolo Invoice Test Release Build 
+
+on:
+  pull_request:
+    branches:
+      - test
+    types:
+      - closed
+
+env:
+  KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+  KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
+
+jobs:
+  release-android:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    name: 🤖 Release Android
+
+    steps:
+      - name: 📚 Git Checkout
+        uses: actions/checkout@v4
+
+      - name: ☕️ Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          cache: gradle
+     
+      - name: 📦 Cache Gradle Dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-      
+
+      - name: 🏗 Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.29.3
+      
+      - name: 🪪 Accept Android Licenses
+        run: yes | flutter doctor --android-licenses
+
+      - name: 🔐 Decode Keystore
+        run: |
+          echo "${{ secrets.KEYSTORE }}" | base64 --decode > ${{ github.workspace }}/android/app/yolo-work.jks
+          ls -lh ${{ github.workspace }}/android/app/yolo-work.jks
+
+      - name: 🧹 Clean & Reset Pub Cache
+        run: |
+          flutter clean
+          rm -rf ~/.pub-cache
+          flutter pub get
+      
+      - name: ​​👨‍⚕️ Flutter Doctor
+        run: flutter doctor -v
+
+      - name: 📦 Flutter Build Apk
+        run: flutter build apk --release --flavor uat  
+
+      - name: 📦 Upload App Apk
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-uat-release.apk
+          path: build/app/outputs/flutter-apk/app-uat-release.apk
+
+      - name: 🛠 Debug APK Path
+        run: ls -R build/app/outputs/flutter-apk/
+
+      - name: 🔐 Set up Firebase Service Account Key
+        run: |
+          echo '${{ secrets.FIREBASE_CREDENTIALS }}' > ${{ github.workspace }}/android/fastlane/firebase.json
+          ls -lh ${{ github.workspace }}/android/fastlane/firebase.json
+
+      - name: 🚀 Install Fastlane & Required Plugins
+        run: |
+          sudo gem install fastlane
+          export PATH="$HOME/.local/share/gem/ruby/3.2.0/bin:$PATH"
+          gem install fastlane-plugin-firebase_app_distribution --user-install  
+
+      - name: 📤 Upload to Firebase App Distribution
+        run: |
+          cd android
+          fastlane deploy_uat

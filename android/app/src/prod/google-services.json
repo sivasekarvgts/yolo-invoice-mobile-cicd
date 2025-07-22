@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "102875497382",
+    "project_id": "invoice-a14da",
+    "storage_bucket": "invoice-a14da.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:102875497382:android:93b531cc14f1e77dd38567",
+        "android_client_info": {
+          "package_name": "com.yoloworks.invoice"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDf1gxFoSpTLdZdHQ6vY4QJaMHgYtdQPFo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

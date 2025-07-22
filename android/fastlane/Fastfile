@@ -1,0 +1,49 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+default_platform(:android)
+
+platform :android do
+  desc "YOLO Invoice Release to App Distribution"
+  lane :deploy_prod do
+    upload_to_play_store(
+      track: "production",
+      aab: "../build/app/outputs/bundle/prodRelease/app-prod-release.aab",
+      json_key: "../google_play_key.json"
+      )
+  end
+  
+  lane :deploy_uat do
+    firebase_app_distribution(
+        app: "1:373064065522:android:38c3b07f81c8e56e7b0b6b",
+        service_credentials_file: "fastlane/firebase.json",
+        testers_file: "fastlane/testers.txt",
+        release_notes_file: "fastlane/release-notes.txt",
+        apk_path: "../build/app/outputs/flutter-apk/app-uat-release.apk"
+    )
+  end
+
+  lane :deploy_dev do
+    firebase_app_distribution(
+        app: "1:373064065522:android:0eb5f644ad35673e7b0b6b",
+        service_credentials_file: "fastlane/firebase.json",
+        testers_file: "fastlane/testers.txt",
+        release_notes_file: "fastlane/release-notes.txt",
+        apk_path: "../build/app/outputs/flutter-apk/app-dev-release.apk"
+    )
+  end
+
+ 
+end

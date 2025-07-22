@@ -1,0 +1,41 @@
+{
+    "version": "0.0.1",
+    "configurations": [
+        {
+            "name": "Dev",
+            "request": "launch",
+            "type": "dart",
+            "args": [
+                "--flavor",
+                "dev"
+            ]
+        },
+        {
+            "name": "DevX",
+            "request": "launch",
+            "type": "dart",
+            "args": [
+                "--flavor",
+                "devX"
+            ]
+        },
+        {
+            "name": "UAT",
+            "request": "launch",
+            "type": "dart",
+            "args": [
+                "--flavor",
+                "uat"
+            ]
+        },
+        {
+            "name": "Prod",
+            "request": "launch",
+            "type": "dart",
+            "args": [
+                "--flavor",
+                "prod"
+            ]
+        }
+    ]
+}

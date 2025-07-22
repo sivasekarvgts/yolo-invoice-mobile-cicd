@@ -1,0 +1,45 @@
+name: Patch Release
+
+on:
+  push:
+    tags:
+      - "v[0-9].[0-9]+.[0-9]+-hotfix.[0-9]+"
+
+env:
+  SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
+
+jobs:
+  patch-android:
+    runs-on: ubuntu-latest
+    name: 🤖 Patch Android
+
+    steps:
+      - name: 📚 Git Checkout
+        uses: actions/checkout@v4
+
+      - name: ☕️ Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          cache: gradle
+
+      - name: 🐦 Setup Shorebird
+        uses: shorebirdtech/setup-shorebird@v1
+        with:
+          cache: true
+
+      - name: 🔐 Decode Keystore
+        run: echo ${{ secrets.KEYSTORE }} | base64 --decode > ${{ github.workspace }}/keystore.jks
+
+      - name: 🧩 Shorebird Patch (Android)
+        uses: shorebirdtech/shorebird-patch@v0
+        id: shorebird-patch
+        env:
+          KEYSTORE_FILE: ${{ github.workspace }}/keystore.jks
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEYSTORE_ALIAS: ${{ secrets.KEYSTORE_ALIAS }}
+        with:
+          platform: android
+          args: "--verbose --flavor prod"
+ 
