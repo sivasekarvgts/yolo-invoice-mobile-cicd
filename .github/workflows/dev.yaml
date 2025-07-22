@@ -8,8 +8,7 @@ jobs:
     runs-on: macos-latest
     env:
       ASC_JSON_KEY: ${{ secrets.ASC_JSON_KEY }}
-      FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: ${{ secrets.APPSTORE_PRIVATE_KEY }}
-      FASTLANE_PASSWORD: ${{ secrets.FASTLANE_PASSWORD }}
+      FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
     steps:
       - name: ⬇️ Checkout repository
         uses: actions/checkout@v3
