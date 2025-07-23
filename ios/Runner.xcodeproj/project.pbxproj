@@ -1177,6 +1177,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.yoloworks.invoice.dev;
 				PRODUCT_NAME = "Yolo Invoice Dev";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "match AppStore com.yoloworks.invoice.dev";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
